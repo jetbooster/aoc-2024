@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thermoweb.aoc.utils.Timer;
 
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
@@ -56,6 +57,10 @@ public class Scaffold implements AocRunner {
                         .addAnnotation(Override.class)
                         .addParameter(ParameterSpec.builder(String.class, "input").build())
                         .returns(ParameterizedTypeName.get(ClassName.get(Optional.class), ClassName.get(BigInteger.class)))
+                        .addStatement("$T t = new $T()",Timer.class,Timer.class)
+                        .addComment("implementation")
+                        .addStatement("t.stop()")
+                        .addStatement("System.out.println(t)")
                         .addStatement("return Optional.empty()")
                         .build())
                 .addMethod(MethodSpec
@@ -64,6 +69,10 @@ public class Scaffold implements AocRunner {
                         .addAnnotation(Override.class)
                         .addParameter(ParameterSpec.builder(String.class, "input").build())
                         .returns(ParameterizedTypeName.get(ClassName.get(Optional.class), ClassName.get(BigInteger.class)))
+                        .addStatement("$T t = new $T()",Timer.class,Timer.class)
+                        .addComment("implementation")
+                        .addStatement("t.stop()")
+                        .addStatement("System.out.println(t)")
                         .addStatement("return Optional.empty()")
                         .build())
                 .build();
