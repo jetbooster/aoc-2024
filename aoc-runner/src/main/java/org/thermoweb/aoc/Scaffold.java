@@ -38,6 +38,7 @@ public class Scaffold implements AocRunner {
     public static ScaffoldExecutorBuilder builder() {
         return new ScaffoldExecutorBuilder();
     }
+
     @Override
     public void execute() throws RunnerException {
         String dayNumber = String.valueOf(day);
@@ -51,29 +52,31 @@ public class Scaffold implements AocRunner {
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(Day.class)
                 .addAnnotation(AnnotationSpec.builder(DaySolver.class).addMember("value", dayNumber).build())
+                .addField(FieldSpec
+                        .builder(Timer.class, "t")
+                        .initializer("new Timer()")
+                        .build())
                 .addMethod(MethodSpec
                         .methodBuilder("partOne")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addParameter(ParameterSpec.builder(String.class, "input").build())
-                        .returns(ParameterizedTypeName.get(ClassName.get(Optional.class), ClassName.get(BigInteger.class)))
-                        .addStatement("$T t = new $T()",Timer.class,Timer.class)
+                        .returns(ParameterizedTypeName.get(ClassName.get(Optional.class),
+                                ClassName.get(BigInteger.class)))
+                        .addStatement("t.restart()")
                         .addComment("implementation")
-                        .addStatement("t.stop()")
-                        .addStatement("System.out.println(t)")
-                        .addStatement("return Optional.empty()")
+                        .addStatement("return t.runAndStop(()->Optional.empty())")
                         .build())
                 .addMethod(MethodSpec
                         .methodBuilder("partTwo")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addParameter(ParameterSpec.builder(String.class, "input").build())
-                        .returns(ParameterizedTypeName.get(ClassName.get(Optional.class), ClassName.get(BigInteger.class)))
-                        .addStatement("$T t = new $T()",Timer.class,Timer.class)
+                        .returns(ParameterizedTypeName.get(ClassName.get(Optional.class),
+                                ClassName.get(BigInteger.class)))
+                        .addStatement("t.restart()")
                         .addComment("implementation")
-                        .addStatement("t.stop()")
-                        .addStatement("System.out.println(t)")
-                        .addStatement("return Optional.empty()")
+                        .addStatement("return t.runAndStop(()->Optional.empty())")
                         .build())
                 .build();
         TypeSpec testClass = TypeSpec
@@ -87,13 +90,15 @@ public class Scaffold implements AocRunner {
                         .methodBuilder("test_part_one")
                         .addAnnotation(Test.class)
                         .addException(Exception.class)
-                        .addStatement("assertEquals($T.empty(), day.partOne($T.getExample(" + dayNumber + ")))", Optional.class, TypeName.get(DayRunner.class))
+                        .addStatement("assertEquals($T.empty(), day.partOne($T.getExample(" + dayNumber + ")))",
+                                Optional.class, TypeName.get(DayRunner.class))
                         .build())
                 .addMethod(MethodSpec
                         .methodBuilder("test_part_two")
                         .addAnnotation(Test.class)
                         .addException(Exception.class)
-                        .addStatement("assertEquals($T.empty(), day.partTwo($T.getExample(" + dayNumber + ")))", Optional.class, TypeName.get(DayRunner.class))
+                        .addStatement("assertEquals($T.empty(), day.partTwo($T.getExample(" + dayNumber + ")))",
+                                Optional.class, TypeName.get(DayRunner.class))
                         .build())
                 .build();
 
@@ -108,7 +113,8 @@ public class Scaffold implements AocRunner {
                 .build();
         try {
             Files.createDirectories(Paths.get("aoc-solutions/src/main/resources/examples"));
-            String exampleFile = "aoc-solutions/src/main/resources/examples/example_" + (day > 9 ? day : "0" + day) + ".txt";
+            String exampleFile = "aoc-solutions/src/main/resources/examples/example_" + (day > 9 ? day : "0" + day)
+                    + ".txt";
             Files.write(Path.of(exampleFile), "".getBytes(), StandardOpenOption.CREATE);
             logger.atInfo().log("file '{}' created", exampleFile);
             javaFile.writeTo(classOutput);

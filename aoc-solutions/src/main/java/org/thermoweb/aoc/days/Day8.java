@@ -10,19 +10,19 @@ import org.thermoweb.aoc.utils.Timer;
 
 @DaySolver(8)
 public class Day8 implements Day {
+    Timer t = new Timer();
+
     @Override
     public Optional<BigInteger> partOne(String input) {
-        Timer t = new Timer();
-        t.stop();
-        System.out.println(t);
-        return Optional.empty();
+        t.restart();
+        // implementation
+        return t.runAndStop(()->Optional.empty());
     }
 
     @Override
     public Optional<BigInteger> partTwo(String input) {
-        Timer t = new Timer();
-        t.stop();
-        System.out.println(t);
-        return Optional.empty();
+        t.restart();
+        // implementation
+        return t.runAndStop(()->Optional.empty());
     }
 }
