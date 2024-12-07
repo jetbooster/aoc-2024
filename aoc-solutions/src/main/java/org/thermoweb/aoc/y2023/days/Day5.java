@@ -1,4 +1,4 @@
-package org.thermoweb.aoc.days;
+package org.thermoweb.aoc.y2023.days;
 
 import java.lang.Override;
 import java.lang.String;
