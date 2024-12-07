@@ -1,5 +1,8 @@
 package org.thermoweb.aoc;
 
+import static org.reflections.scanners.Scanners.SubTypes;
+import static org.reflections.scanners.Scanners.TypesAnnotated;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -10,13 +13,11 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.reflections.scanners.Scanners.SubTypes;
-import static org.reflections.scanners.Scanners.TypesAnnotated;
-
 public class Solve implements AocRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(Solve.class);
     private final int day;
+
     public Solve(int day) {
         this.day = day;
     }
@@ -31,7 +32,9 @@ public class Solve implements AocRunner {
         Reflections reflections = new Reflections("org.thermoweb.aoc");
         Set<Class<?>> daySolvers = reflections.get(SubTypes.of(TypesAnnotated.with(DaySolver.class)).asClass());
         Class<?> daySolver = daySolvers.stream()
-                .filter(ds -> ds.getAnnotation(DaySolver.class).value() == day && Arrays.stream(ds.getInterfaces()).anyMatch(i -> i == Day.class))
+                .filter(ds -> ds.getAnnotation(DaySolver.class).value() == day
+                        && Arrays.stream(ds.getInterfaces()).anyMatch(i -> i == Day.class))
+                .filter(ds -> !ds.getPackage().getName().contains("2023"))
                 .findFirst()
                 .orElseThrow();
         Constructor<?> constructor = Arrays.stream(daySolver.getDeclaredConstructors())
