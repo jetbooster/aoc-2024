@@ -1,6 +1,5 @@
 package org.thermoweb.aoc.utils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,18 +18,20 @@ public class Grid<T extends Element> {
   public int width;
   public int height;
 
-  T createElem(Class<T> clazz, Object... initArgs)
-      throws InstantiationException, IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-    var constructor = clazz.getDeclaredConstructor(new Class[] { int.class, int.class, String.class });
-    constructor.setAccessible(true);
-    return constructor.newInstance(initArgs);
+  @SuppressWarnings("unchecked")
+  T createElem(Class<T> clazz, Object... initArgs) {
+    try {
+      var constructor = clazz.getDeclaredConstructor(new Class[] { int.class, int.class, String.class });
+      constructor.setAccessible(true);
+      return constructor.newInstance(initArgs);
+
+    } catch (Exception e) {
+      return (T) new Element((int) initArgs[0], (int) initArgs[1], (String) initArgs[2]);
+    }
 
   }
 
-  public Grid(String input, Class<T> clazz)
-      throws InstantiationException, IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+  public Grid(String input, Class<T> clazz) {
     String[] rows = input.split(System.lineSeparator());
     this.height = rows.length;
     this.rawElements = Arrays.stream(rows).map((row) -> {
@@ -100,6 +101,10 @@ public class Grid<T extends Element> {
     return this.elements.values().stream().filter(p);
   }
 
+  public T get(Position p) {
+    return this.elements.get(x + "," + y);
+  }
+
   public T get(int x, int y) {
     return this.elements.get(x + "," + y);
   }
@@ -138,6 +143,10 @@ public class Grid<T extends Element> {
       }
     }
     return results.stream();
+  }
+
+  Optional<T> getElementAtOffset(T element, Position p){
+    this.get(element.getLocationAtOffset(p))
   }
 
   @Override

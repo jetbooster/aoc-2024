@@ -1,16 +1,15 @@
 package org.thermoweb.aoc.utils;
 
-public class Element {
-  int x;
-  int y;
+public class Element extends Position {
+  Position p;
   String content;
 
   public int getX() {
-    return x;
+    return p.getX();
   }
 
   public int getY() {
-    return y;
+    return p.getY();
   }
 
   public String getContent() {
@@ -18,14 +17,12 @@ public class Element {
   }
 
   public Element(int x, int y, String content) {
-    this.x = x;
-    this.y = y;
+    super(x, y);
     this.content = content;
   }
 
-  public Element(Integer x, Integer y, String content) {
-    this.x = x.intValue();
-    this.y = y.intValue();
-    this.content = content;
+  @Override
+  public String toString() {
+    return "%s %s".formatted(super.toString(), this.content);
   }
 }
