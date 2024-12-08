@@ -4,6 +4,8 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.thermoweb.aoc.Day;
@@ -46,18 +48,19 @@ public class Day4 implements Day {
         String searchString = "MAS";
         int hits = 0;
         for (Direction d : Direction.values()) {
-            boolean success = true;
-            for (int range = 1; range <= searchString.length(); range++) {
-                Element potentialElem = g.neighbour(e, d, range);
-                if (potentialElem == null) {
-                    success = false;
-                    break;
-                }
-                if (!potentialElem.getContent().equals(String.valueOf(searchString.charAt(range - 1)))) {
-                    success = false;
-                }
+            AtomicBoolean success = new AtomicBoolean(false);
+            for (AtomicInteger range = new AtomicInteger(0); range.get() <= searchString.length(); range
+                    .getAndIncrement()) {
+                g.neighbour(e, d, range.get()).ifPresentOrElse((elem) -> {
+                    if (!elem.getContent().equals(String.valueOf(searchString.charAt(range.get() - 1)))) {
+                        success.set(false);
+                    }
+
+                }, () -> {
+                    success.set(false);
+                });
             }
-            if (success) {
+            if (success.get()) {
                 hits++;
             }
         }
@@ -66,8 +69,10 @@ public class Day4 implements Day {
 
     int findExMAS(Grid<Element> g, Element e) {
         int hits = 0;
-        Element[] one = new Element[] { g.neighbour(e, Direction.NE), g.neighbour(e, Direction.SW) };
-        Element[] two = new Element[] { g.neighbour(e, Direction.NW), g.neighbour(e, Direction.SE) };
+        Element[] one = new Element[] { g.neighbour(e, Direction.NE).orElse(null),
+                g.neighbour(e, Direction.SW).orElse(null) };
+        Element[] two = new Element[] { g.neighbour(e, Direction.NW).orElse(null),
+                g.neighbour(e, Direction.SE).orElse(null) };
         if (!(one[0] == null || one[1] == null)) {
             var x = Arrays.asList(one).stream().map(Element::getContent).collect(Collectors.toList());
             if (x.containsAll(sm)) {

@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 public class Grid<T extends Element> {
   String[][] rawElements;
-  Map<String, T> elements = new HashMap<String, T>();
+  Map<Position, T> elements = new HashMap<Position, T>();
   public int width;
   public int height;
 
@@ -42,7 +42,7 @@ public class Grid<T extends Element> {
 
     for (int j = 0; j < this.height; j++) {
       for (int i = 0; i < this.width; i++) {
-        elements.put(i + "," + j, createElem(clazz, i, j, rawElements[j][i]));
+        elements.put(new Position(i, j), createElem(clazz, i, j, rawElements[j][i]));
       }
     }
   }
@@ -52,7 +52,7 @@ public class Grid<T extends Element> {
     for (int j = 0; j < this.height; j++) {
       Stream.Builder<T> s = Stream.builder();
       for (int i = 0; i < this.width; i++) {
-        s.add(this.get(i, j));
+        this.get(i, j).ifPresent(s::add);
       }
       ss.add(s.build());
     }
@@ -64,7 +64,7 @@ public class Grid<T extends Element> {
     for (int i = 0; i < this.width; i++) {
       Stream.Builder<T> s = Stream.builder();
       for (int j = 0; j < this.height; j++) {
-        s.add(this.get(i, j));
+        this.get(i, j).ifPresent(s::add);
       }
       ss.add(s.build());
     }
@@ -101,23 +101,23 @@ public class Grid<T extends Element> {
     return this.elements.values().stream().filter(p);
   }
 
-  public T get(Position p) {
-    return this.elements.get(x + "," + y);
+  public Optional<T> get(Position p) {
+    return Optional.ofNullable(this.elements.get(p));
   }
 
-  public T get(int x, int y) {
-    return this.elements.get(x + "," + y);
+  public Optional<T> get(int x, int y) {
+    return this.get(new Position(x, y));
   }
 
-  public T neighbour(T e, int xOffset, int yOffset) {
+  public Optional<T> neighbour(T e, int xOffset, int yOffset) {
     return this.get(e.getX() + xOffset, e.getY() + yOffset);
   }
 
-  public T neighbour(T e, Direction d) {
+  public Optional<T> neighbour(T e, Direction d) {
     return this.neighbour(e, d, 1);
   }
 
-  public T neighbour(T e, Direction d, int range) {
+  public Optional<T> neighbour(T e, Direction d, int range) {
     return this.get(e.getX() + d.x * range, e.getY() + d.y * range);
   }
 
@@ -136,17 +136,14 @@ public class Grid<T extends Element> {
         if (!diagonal && ((d.x + d.y) % 2 == 0)) {
           continue;
         }
-        T potentialElem = elements.get(String.format("%s,%s", e.getX() + d.x * i, e.getY() + d.y * i));
-        if (potentialElem != null) {
-          results.add(potentialElem);
-        }
+        this.get(e.getX() + d.x * i, e.getY() + d.y * i).ifPresent(results::add);
       }
     }
     return results.stream();
   }
 
-  Optional<T> getElementAtOffset(T element, Position p){
-    this.get(element.getLocationAtOffset(p))
+  public Optional<T> getElementAtOffset(T element, Position p) {
+    return this.get(element.getLocationAtOffset(p));
   }
 
   @Override

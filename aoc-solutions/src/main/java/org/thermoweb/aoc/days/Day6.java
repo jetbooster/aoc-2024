@@ -115,12 +115,12 @@ public class Day6 implements Day {
             System.out.println("%s/%s".formatted(++iteration, potentialBlockLocations.size()));
             try {
                 Grid<VisitedElement> grid = new Grid<>(input, VisitedElement.class);
-                grid.get(v.getX(), v.getY()).setTempBlock(true);
+                grid.get(v.getX(), v.getY()).ifPresent((elem) -> elem.setTempBlock(true));
                 Optional<VisitedElement> step = stepDetectLoop(grid, Optional.of(guardStart));
                 while (step.isPresent()) {
                     step = stepDetectLoop(grid, step);
                 }
-                grid.get(v.getX(), v.getY()).setTempBlock(false);
+                grid.get(v.getX(), v.getY()).ifPresent((elem) -> elem.setTempBlock(false));
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 return Optional.empty();
@@ -137,22 +137,19 @@ public class Day6 implements Day {
         }
         VisitedElement validElem = elem.get();
         validElem.setVisted(true);
+
         Direction facingDirection = validElem.getGuardFacing().orElseThrow();
+        return grid.neighbour(validElem, facingDirection).map((next) -> {
+            Direction newFacingDirection = facingDirection;
+            while (next.getContent().equals("#")) {
+                newFacingDirection = newFacingDirection.turnRight();
+                next = grid.neighbour(validElem, facingDirection).orElse(null);
+            }
+            next.setVisted(true);
+            next.setGuardFacing(facingDirection);
+            return next;
+        });
 
-        VisitedElement next = grid.neighbour(validElem, facingDirection);
-        if (next == null) {
-            // exiting grid
-            return Optional.empty();
-        }
-
-        while (next.getContent().equals("#")) {
-            facingDirection = facingDirection.turnRight();
-            next = grid.neighbour(validElem, facingDirection);
-        }
-        next.setVisted(true);
-        next.setGuardFacing(facingDirection);
-        // printStep(grid);
-        return Optional.of(next);
     }
 
     Optional<VisitedElement> stepDetectLoop(Grid<VisitedElement> grid, Optional<VisitedElement> elem) {
@@ -164,35 +161,30 @@ public class Day6 implements Day {
         validElem.setVisted(true);
         Direction facingDirection = validElem.getGuardFacing().orElseThrow();
 
-        VisitedElement next = grid.neighbour(validElem, facingDirection);
-        if (next == null) {
-            // exiting grid
-            System.out.println("isNotLoop");
-            return Optional.empty();
-        }
+        return grid.neighbour(validElem, facingDirection).map((next) -> {
+            Direction newFacingDirection = facingDirection;
+            while (next.getContent().equals("#") || next.isTempBlock()) {
+                if (next.isTempBlock()) {
+                    this.print = true;
+                }
+                newFacingDirection = facingDirection.turnRight();
 
-        while (next.getContent().equals("#") || next.isTempBlock()) {
-            if (next.isTempBlock()) {
-                this.print = true;
+                next = grid.neighbour(validElem, newFacingDirection).orElse(null);
+                if (this.print) {
+                    // printStep(grid);
+                }
             }
-            facingDirection = facingDirection.turnRight();
-
-            next = grid.neighbour(validElem, facingDirection);
-            if (this.print) {
-                // printStep(grid);
+            if (next.beenBefore(newFacingDirection)) {
+                // temp block has caused guard to turn onto a path he has walked before,
+                // guaranteeing loop
+                System.out.println("isLoop");
+                loops++;
+                return null;
             }
-        }
-        if (next.beenBefore(facingDirection)) {
-            // temp block has caused guard to turn onto a path he has walked before,
-            // guaranteeing loop
-            System.out.println("isLoop");
-            loops++;
-            return Optional.empty();
-        }
-        next.setVisted(true);
-        next.setGuardFacing(facingDirection);
-        // printStep(grid);
-        return Optional.of(next);
+            next.setVisted(true);
+            next.setGuardFacing(newFacingDirection);
+            return next;
+        });
     }
 
     long visitedSquares(Grid<VisitedElement> grid, VisitedElement startElem) {
