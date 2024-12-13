@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -71,6 +72,14 @@ public class Grid<T extends Element> {
     return ss.build();
   }
 
+  public void forEach(Consumer<T> func) {
+    this.elements.values().stream().forEach(func);
+  }
+
+  public Stream<T> stream() {
+    return this.elements.values().stream();
+  }
+
   public Optional<T> find(String content) {
     Predicate<T> p = (elem) -> {
       return elem.getContent().equals(content);
@@ -130,13 +139,24 @@ public class Grid<T extends Element> {
   }
 
   public Stream<T> neighbours(T e, boolean diagonal, int range) {
+    return this.neighbours(e, diagonal, range, false);
+  }
+
+  public Stream<T> neighbours(T e, boolean diagonal, int range, boolean includeNulls) {
     List<T> results = new ArrayList<>();
     for (Direction d : Direction.values()) {
       for (int i = 1; i <= range; i++) {
         if (!diagonal && ((d.x + d.y) % 2 == 0)) {
           continue;
         }
-        this.get(e.getX() + d.x * i, e.getY() + d.y * i).ifPresent(results::add);
+        var val = this.get(e.getX() + d.x * i, e.getY() + d.y * i);
+        if (val.isPresent()) {
+          results.add(val.get());
+        } else if (includeNulls) {
+          results.add(null);
+        } else {
+          continue;
+        }
       }
     }
     return results.stream();

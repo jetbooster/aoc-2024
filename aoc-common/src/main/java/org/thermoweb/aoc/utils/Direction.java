@@ -39,6 +39,20 @@ public enum Direction {
     return Direction.values()[Math.floorMod(this.ordinal() + 4, Direction.values().length)];
   }
 
+  public boolean isDiagonal() {
+    return this.equals(Direction.NE)
+        || this.equals(Direction.SE)
+        || this.equals(Direction.SW)
+        || this.equals(Direction.NW);
+  }
+
+  public boolean isCompass() {
+    return this.equals(Direction.N)
+        || this.equals(Direction.E)
+        || this.equals(Direction.S)
+        || this.equals(Direction.W);
+  }
+
   @Override
   public String toString() {
     return String.valueOf("↑↗→↘↓↙←↖".charAt(this.ordinal()));

@@ -15,8 +15,8 @@ import org.thermoweb.aoc.Day;
 import org.thermoweb.aoc.DaySolver;
 import org.thermoweb.aoc.utils.Timer;
 
-record Element(Integer id, int postion) {
-    Element(Optional<Integer> id, int position) {
+record Day9Element(Integer id, int postion) {
+    Day9Element(Optional<Integer> id, int position) {
         this(id.isEmpty() ? null : id.get(), position);
     }
 }
@@ -42,21 +42,21 @@ public class Day9 implements Day {
         // implementation
 
         return t.runAndStop(() -> {
-            ArrayList<Element> elems = new ArrayList<>();
+            ArrayList<Day9Element> elems = new ArrayList<>();
             AtomicInteger id = new AtomicInteger(0);
             AtomicInteger memoryLocation = new AtomicInteger(0);
             AtomicBoolean isMemory = new AtomicBoolean(true);
             Arrays.stream(input.split("")).mapToInt(Integer::valueOf).forEach(elem -> {
                 if (!isMemory.get()) {
                     for (int i = 0; i < elem; i++) {
-                        elems.add(new Element(Optional.empty(), memoryLocation.getAndIncrement()));
+                        elems.add(new Day9Element(Optional.empty(), memoryLocation.getAndIncrement()));
                     }
                     isMemory.set(true);
                     return;
                 }
                 int myId = id.getAndIncrement();
                 for (int i = 0; i < elem; i++) {
-                    elems.add(new Element(Optional.of(myId), memoryLocation.getAndIncrement()));
+                    elems.add(new Day9Element(Optional.of(myId), memoryLocation.getAndIncrement()));
                 }
                 isMemory.set(false);
 
@@ -64,13 +64,13 @@ public class Day9 implements Day {
             System.out.println(elems.size());
             boolean print = false;
             for (int i = 0; i < elems.size() - 1; i++) {
-                Element el = elems.get(i);
+                Day9Element el = elems.get(i);
                 if (el.id() == null) {
-                    Element pulledElem = elems.removeLast();
+                    Day9Element pulledElem = elems.removeLast();
                     while (pulledElem.id() == null) {
                         pulledElem = elems.removeLast();
                     }
-                    elems.set(i, new Element(pulledElem.id(), i));
+                    elems.set(i, new Day9Element(pulledElem.id(), i));
                 }
                 if (i == 99999) {
                     print = true;
@@ -137,7 +137,7 @@ public class Day9 implements Day {
         });
     }
 
-    String print(List<Element> elems) {
+    String print(List<Day9Element> elems) {
         StringBuilder s = new StringBuilder();
         elems.stream().forEach((elem) -> {
             if (elem.id() != null) {
