@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.testng.Assert;
@@ -25,9 +26,9 @@ public class GridTest {
   @Test
   public void testGridParsing() {
     Assert.assertEquals(grid.elements.size(), 18 * 5);
-    Assert.assertEquals(grid.get(5, 0), new Element(5, 0, "4"));
-    Assert.assertEquals(grid.get(0, 4), new Element(0, 4, "3"));
-    Assert.assertEquals(grid.get(17, 4), new Element(17, 4, "7"));
+    Assert.assertEquals(grid.get(5, 0), Optional.of(new Element(5, 0, "4")));
+    Assert.assertEquals(grid.get(0, 4), Optional.of(new Element(0, 4, "3")));
+    Assert.assertEquals(grid.get(17, 4), Optional.of(new Element(17, 4, "7")));
   }
 
   @Test

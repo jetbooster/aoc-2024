@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Grid<T extends Element> {
@@ -18,6 +19,7 @@ public class Grid<T extends Element> {
   Map<Position, T> elements = new HashMap<Position, T>();
   public int width;
   public int height;
+  public Class<T> clazz;
 
   @SuppressWarnings("unchecked")
   T createElem(Class<T> clazz, Object... initArgs) {
@@ -48,6 +50,18 @@ public class Grid<T extends Element> {
     }
   }
 
+  public Grid(int width, int height, String fill, Class<T> clazz) {
+    this.width = width;
+    this.height = height;
+    this.clazz = clazz;
+    this.rawElements = IntStream.range(0, width).mapToObj((i) -> {
+      return IntStream.range(0, height).mapToObj((j) -> {
+        elements.put(new Position(i, j), createElem(clazz, i, j, fill));
+        return ".";
+      }).toArray(String[]::new);
+    }).toArray(String[][]::new);
+  }
+
   public Stream<Stream<T>> rows() {
     Stream.Builder<Stream<T>> ss = Stream.builder();
     for (int j = 0; j < this.height; j++) {
@@ -74,6 +88,10 @@ public class Grid<T extends Element> {
 
   public void forEach(Consumer<T> func) {
     this.elements.values().stream().forEach(func);
+  }
+
+  public Stream<Object> map(Function<T, Object> func) {
+    return this.elements.values().stream().map(func);
   }
 
   public Stream<T> stream() {
@@ -116,6 +134,18 @@ public class Grid<T extends Element> {
 
   public Optional<T> get(int x, int y) {
     return this.get(new Position(x, y));
+  }
+
+  public void set(int x, int y, T elem) {
+    this.rawElements[y][x] = elem.getContent();
+    this.set(new Position(x, y), elem);
+  }
+
+  public void set(Position p, T elem) {
+    this.rawElements[p.getY()][p.getX()] = elem.getContent();
+    elem.setX(p.getX());
+    elem.setY(p.getY());
+    this.elements.put(new Position(p.getX(), p.getY()), elem);
   }
 
   public Optional<T> neighbour(T e, int xOffset, int yOffset) {
@@ -164,6 +194,27 @@ public class Grid<T extends Element> {
 
   public Optional<T> getElementAtOffset(T element, Position p) {
     return this.get(element.getLocationAtOffset(p));
+  }
+
+  public void moveElement(Position from, Position to, Function<T, T> mutation, T replacementElement) {
+    var fromElem = this.get(from).get();
+    var toElem = mutation.apply(fromElem);
+    this.set(to, toElem);
+    this.set(from, replacementElement);
+  }
+
+  public void moveElement(Position from, Position to, Function<T, T> mutation) {
+    this.moveElement(from, to, mutation, createElem(clazz, from.getX(), to.getY(), "."));
+  }
+
+  public void moveElement(Position from, Position to) {
+    this.moveElement(from, to, (e) -> e, createElem(clazz, from.getX(), to.getY(), "."));
+  }
+
+  public void swap(T a, T b) {
+    Position temp = new Position(a.getX(), a.getY());
+    this.set(b, a);
+    this.set(temp, b);
   }
 
   @Override

@@ -57,4 +57,20 @@ public enum Direction {
   public String toString() {
     return String.valueOf("↑↗→↘↓↙←↖".charAt(this.ordinal()));
   }
+
+  public static Direction convertToDirection(String s) {
+    if (s.equals("^")) {
+      return N;
+    }
+    if (s.equals(">")) {
+      return E;
+    }
+    if (s.equals("v")) {
+      return S;
+    }
+    if (s.equals("<")) {
+      return W;
+    }
+    throw new IllegalArgumentException("unrecognised char %s".formatted(s));
+  }
 }
